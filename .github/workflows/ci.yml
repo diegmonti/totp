@@ -1,0 +1,81 @@
+name: CI
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_call:
+  schedule:
+    - cron: '31 7 * * 1'
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+          - os: macos-15
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Toolchain
+        run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --locked --all-targets --target ${{ matrix.target }} -- -D warnings
+      - run: cargo test --locked --target ${{ matrix.target }}
+      - name: Install Linux Secret Service
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y dbus-x11 gnome-keyring
+      - name: Native Linux integration (isolated unlocked keyring)
+        if: runner.os == 'Linux'
+        env:
+          TOTP_NATIVE_TESTS: '1'
+        run: |
+          export XDG_DATA_HOME="$RUNNER_TEMP/totp-data"
+          export XDG_CONFIG_HOME="$RUNNER_TEMP/totp-config"
+          export GNOME_KEYRING_CONTROL="$RUNNER_TEMP/keyring"
+          mkdir -p "$GNOME_KEYRING_CONTROL"
+          dbus-run-session -- bash -euo pipefail -c '
+            printf "%s" "ci-only-ephemeral-password" | gnome-keyring-daemon --unlock --components=secrets --control-directory="$GNOME_KEYRING_CONTROL"
+            cargo test --locked --test native_storage -- --ignored --test-threads=1
+            TOTP_LOCKED_TESTS=1 cargo test --locked --test native_storage locked_native_backend_fails_without_interaction -- --ignored --test-threads=1
+          '
+      - name: Native macOS integration (temporary keychain)
+        if: runner.os == 'macOS'
+        env:
+          TOTP_NATIVE_TESTS: '1'
+        run: |
+          keychain="$RUNNER_TEMP/totp-ci.keychain-db"
+          security create-keychain -p ci-only-ephemeral-password "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p ci-only-ephemeral-password "$keychain"
+          security list-keychains -d user -s "$keychain"
+          security default-keychain -d user -s "$keychain"
+          trap 'security delete-keychain "$keychain"' EXIT
+          cargo test --locked --test native_storage -- --ignored --test-threads=1
+      - name: Native Windows integration
+        if: runner.os == 'Windows'
+        env:
+          TOTP_NATIVE_TESTS: '1'
+        run: cargo test --locked --test native_storage -- --ignored --test-threads=1
+  dependencies:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: rustup toolchain install stable --profile minimal
+      - run: cargo install cargo-deny --locked --version 0.19.0
+      - run: cargo deny --locked check advisories bans licenses sources
