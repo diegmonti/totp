@@ -14,7 +14,7 @@ thiserror = "2"
 data-encoding = "2.9"
 hmac = "0.12"
 sha1 = "0.10"
-sha2 = "0.10"
+sha2 = "0.11"
 crossterm = "0.29"
 
 [target.'cfg(target_os = "linux")'.dependencies]
