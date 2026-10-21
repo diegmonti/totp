@@ -12,9 +12,9 @@ The source specification is [REQUIREMENTS.md](../REQUIREMENTS.md). This map desc
 | SR-004/005; AC-004 | Linux Secret Service session CI; documented headless/WSL conditions; absent/locked provider failure |
 | SR-006; AC-006 | macOS no-UI native API, required Developer ID/notarization workflow; real signed upgrade and access-policy checks remain manual release evidence |
 | SEC-001/002/005–009 | Redacted errors, no secret-bearing arguments/files, bounded input, zeroizing sensitive buffers; security model in SECURITY.md |
-| NFR-001/002/005; AC-012 | Five native CI targets, native integration, platform separation and five standalone release archives |
+| NFR-001/002/005; AC-012 | Five native CI targets, native integration, platform separation; three required Windows/Linux archives and two optional signed macOS archives |
 | NFR-003/004/006 | Performance targets depend on OS latency; read/validation behavior tests and stable versioned schema; no universal latency guarantee |
 | NFR-007 | README, platforms.md, SECURITY.md, releasing.md; Bash, Zsh and PowerShell examples |
-| AC-013; Definition of Done | Passing automated matrix plus documented real-platform authorization/upgrade checks and actual published signed artifacts required |
+| AC-013; Definition of Done | Passing automated matrix, Windows/Linux archives and macOS source installation; signed macOS archives require additional signing/upgrade acceptance |
 
 No backup, export, cross-platform migration, cloud synchronization, GUI, HOTP, or dedicated headless store is implemented by the v1 scope. Actual Windows/macOS behavior and signed upgrade continuity require those platforms; Linux-only local success cannot substitute for them.

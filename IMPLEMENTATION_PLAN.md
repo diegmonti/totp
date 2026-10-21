@@ -25,8 +25,9 @@ agents, followed by a separate Sol 6.1 review and corrective validation.
 5. **CI and release:** format, lint, test and build all five target combinations;
    monitor dependencies and licenses. Release version tags automatically after
    validation, packaging binaries and checksums. Require configured stable macOS
-   signing credentials for official releases rather than silently shipping
-   unsigned replacements.
+   signing credentials for optional official macOS archives rather than silently
+   shipping unsigned replacements. Without Apple credentials, publish Windows
+   and Linux archives and document macOS source installation.
 6. **Documentation:** cover installation, CLI and shell examples, security model,
    backend setup, Linux/WSL limitations, macOS authorization, troubleshooting,
    schema compatibility, release configuration, and acceptance evidence.
@@ -45,5 +46,6 @@ distinguish detected capabilities from unknown per-credential authorization.
 Run local formatting, clippy, unit/CLI tests and available native integration
 checks. Push a feature branch and open a reviewable pull request. Do not merge
 or publish a release as part of implementation. Record platform checks that
-cannot be exercised locally; CI and signed macOS upgrade authorization must
-provide the remaining evidence before declaring version 1.0 release-ready.
+cannot be exercised locally; CI must provide the remaining platform evidence.
+Signed macOS upgrade authorization is an additional gate only when distributing
+the optional signed macOS archives.

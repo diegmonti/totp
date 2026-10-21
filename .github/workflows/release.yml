@@ -7,22 +7,50 @@ permissions:
 jobs:
   checks:
     uses: ./.github/workflows/ci.yml
-  build:
+  targets:
     needs: checks
+    runs-on: ubuntu-24.04
+    environment: release
+    outputs:
+      matrix: ${{ steps.select.outputs.matrix }}
+    steps:
+      - name: Select release platforms
+        id: select
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        shell: python
+        run: |
+          import json
+          import os
+
+          targets = [
+              {"os": "ubuntu-24.04", "target": "x86_64-unknown-linux-gnu"},
+              {"os": "ubuntu-24.04-arm", "target": "aarch64-unknown-linux-gnu"},
+              {"os": "windows-2022", "target": "x86_64-pc-windows-msvc"},
+          ]
+          credentials = (
+              "CERTIFICATE_BASE64", "CERTIFICATE_PASSWORD", "SIGNING_IDENTITY",
+              "APPLE_ID", "APPLE_TEAM_ID", "APPLE_APP_PASSWORD",
+          )
+          if all(os.environ.get(key, "").strip() for key in credentials):
+              targets.extend([
+                  {"os": "macos-15-intel", "target": "x86_64-apple-darwin"},
+                  {"os": "macos-15", "target": "aarch64-apple-darwin"},
+              ])
+          else:
+              print("::notice::macOS archives omitted: signing/notarization credentials are incomplete. macOS users can build from source.")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write("matrix=" + json.dumps({"include": targets}) + "\n")
+  build:
+    needs: targets
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-24.04
-            target: x86_64-unknown-linux-gnu
-          - os: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-gnu
-          - os: windows-2022
-            target: x86_64-pc-windows-msvc
-          - os: macos-15-intel
-            target: x86_64-apple-darwin
-          - os: macos-15
-            target: aarch64-apple-darwin
+      matrix: ${{ fromJSON(needs.targets.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     environment: release
     timeout-minutes: 30
@@ -102,4 +130,10 @@ jobs:
         run: |
           cd dist
           sha256sum *.tar.gz *.zip > SHA256SUMS
-          gh release create "$GITHUB_REF_NAME" ./* --verify-tag --generate-notes --title "$GITHUB_REF_NAME"
+          notes="$RUNNER_TEMP/release-notes.md"
+          if compgen -G '*apple-darwin.tar.gz' > /dev/null; then
+            printf '%s\n' 'Includes signed and notarized macOS binaries.' > "$notes"
+          else
+            printf '%s\n' 'macOS binaries are not included in this release. Build from source with stable Rust: `cargo build --release --locked`. See README.md and docs/platforms.md for Keychain authorization guidance.' > "$notes"
+          fi
+          gh release create "$GITHUB_REF_NAME" ./* --verify-tag --generate-notes --notes-file "$notes" --title "$GITHUB_REF_NAME"

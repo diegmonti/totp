@@ -11,8 +11,21 @@ When a release is available, download the archive matching your OS and CPU from 
 | Windows x64 | `x86_64-pc-windows-msvc` | Credential Manager |
 | Linux x64 | `x86_64-unknown-linux-gnu` | Secret Service over session D-Bus |
 | Linux ARM64 | `aarch64-unknown-linux-gnu` | Secret Service over session D-Bus |
-| macOS Intel | `x86_64-apple-darwin` | Keychain |
-| macOS Apple Silicon | `aarch64-apple-darwin` | Keychain |
+| macOS Intel (optional archive) | `x86_64-apple-darwin` | Keychain |
+| macOS Apple Silicon (optional archive) | `aarch64-apple-darwin` | Keychain |
+
+Windows and Linux archives are published without requiring Apple credentials. macOS archives are included only when signing and notarization are configured. Otherwise, macOS users can build from source with stable Rust:
+
+```sh
+git clone https://github.com/diegmonti/totp.git
+cd totp
+# Optionally check out the desired release tag before building.
+cargo build --release --locked
+install -d "$HOME/.local/bin"
+install -m 755 target/release/totp "$HOME/.local/bin/totp"
+```
+
+Add `$HOME/.local/bin` to your `PATH`. A local build needs no paid Apple certificate; Keychain may require renewed authorization after rebuilding or replacing it. See [macOS setup](docs/platforms.md) before upgrading.
 
 Build from source with stable Rust: `cargo build --release --locked`. Run `cargo test --locked`, `cargo fmt --all -- --check`, and `cargo clippy --locked --all-targets -- -D warnings`. Commit `Cargo.lock` updates after review. See [release maintenance](docs/releasing.md) for signing and platform validation requirements. A configured workflow is not evidence that all platform acceptance tests have passed.
 
