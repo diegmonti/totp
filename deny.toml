@@ -1,0 +1,21 @@
+[advisories]
+version = 2
+# Reviewed 2026-10-21: these are maintenance notices, not known vulnerabilities.
+# secret-service 5 still uses zbus 5; migrate the vendored adapter to zbus 6
+# when its API integration is reviewed. Revisit by 2027-01-21; see docs/releasing.md.
+ignore = [
+  { id = "RUSTSEC-2026-0370", reason = "zvariant merged into zbus 6; secret-service 5 requires zbus 5; review migration by 2027-01-21" },
+  { id = "RUSTSEC-2026-0371", reason = "zbus_names merged into zbus 6; secret-service 5 requires zbus 5; review migration by 2027-01-21" },
+  { id = "RUSTSEC-2026-0372", reason = "zvariant_derive merged into zbus 6; secret-service 5 requires zbus 5; review migration by 2027-01-21" },
+]
+[licenses]
+version = 2
+confidence-threshold = 0.8
+allow = ["MIT", "Apache-2.0", "BSD-3-Clause", "Unicode-3.0"]
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

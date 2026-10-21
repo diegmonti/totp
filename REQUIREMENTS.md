@@ -540,7 +540,9 @@ The macOS implementation shall support unattended credential retrieval by the au
 
 Requirements:
 
-- Official release binaries shall use a stable code-signing identity.
+- Official prebuilt macOS release binaries, when provided, shall use a stable code-signing identity and be notarized.
+- macOS release archives are optional when signing or notarization credentials are unavailable. Windows and Linux releases shall remain available independently of those credentials.
+- macOS shall remain supported through source builds and automated native CI. Source builds do not guarantee Keychain authorization continuity across rebuilds; this limitation shall be documented.
 - The selected Keychain access policy shall support unattended access after appropriate authorization.
 - The implementation shall not require user presence for every TOTP generation.
 - The application shall not deliberately grant unrestricted credential access to unrelated applications.
@@ -1022,7 +1024,7 @@ Version 1.0 shall be ready for release when:
 7. macOS application authorization is validated.
 8. No insecure storage fallback exists.
 9. Stable CLI output and exit codes are verified.
-10. Standalone release binaries and documentation are available.
+10. Standalone Windows and Linux release binaries and documentation are available. macOS source installation is documented; prebuilt macOS archives are optional and require signing, notarization, and the corresponding upgrade authorization acceptance checks.
 
 ---
 
