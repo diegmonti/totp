@@ -19,6 +19,10 @@ Validated on Linux x86-64 with stable Rust 1.99.1:
 - `cargo check --locked --offline --tests` passes for Windows x64 GNU and both
   macOS architectures. These compile checks do not execute native OS calls.
 - GitHub workflow syntax is checked with actionlint.
+- `cargo deny --locked check advisories bans licenses sources` passes with three
+  reviewed maintenance-only exceptions for the zbus 5 dependency family. The
+  identifiers, rationale and migration review date are recorded in `deny.toml`
+  and [releasing.md](releasing.md); security vulnerability checks remain enabled.
 
 ## Review and corrections
 
