@@ -132,27 +132,35 @@ fn native_cli_registration_generation_import_and_removal() {
     struct Cleanup(Vec<String>);
     impl Drop for Cleanup {
         fn drop(&mut self) {
-            if let Ok(store) = native_store() {
-                for name in &self.0 {
-                    let _ = store.delete(name);
-                }
+            for name in &self.0 {
+                let _ = Command::new(env!("CARGO_BIN_EXE_totp"))
+                    .args(["remove", name, "--force"])
+                    .stdin(Stdio::null())
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .status();
             }
         }
     }
     let _cleanup = Cleanup(vec![first.clone(), second.clone()]);
     let added = run(
-        &["add", &first, "--secret-stdin"],
+        &["add", &first, "--secret-stdin", "--period", "4294967295"],
         Some(b"JBSWY3DPEHPK3PXP\n"),
     );
     assert!(added.status.success());
     assert!(added.stdout.is_empty());
-    let before = native_store().unwrap().retrieve(&first).unwrap();
+    // A period longer than the current Unix epoch keeps the time counter at
+    // zero, so comparing CLI codes cannot race across a normal TOTP boundary.
+    let before = run(&["get", &first], None);
+    assert!(before.status.success());
     let invalid = run(
         &["add", &first, "--secret-stdin", "--replace"],
         Some(b"INVALID!\n"),
     );
     assert_eq!(invalid.status.code(), Some(6));
-    assert_eq!(*before, *native_store().unwrap().retrieve(&first).unwrap());
+    let after = run(&["get", &first], None);
+    assert!(after.status.success());
+    assert_eq!(before.stdout, after.stdout);
     let duplicate = run(
         &["add", &first, "--secret-stdin"],
         Some(b"JBSWY3DPEHPK3PXP\n"),

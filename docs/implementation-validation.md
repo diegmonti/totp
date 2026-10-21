@@ -41,6 +41,12 @@ implementation also suppresses implicit Secret Service prompts through a small,
 documented vendor patch, and fixes a diagnostic failure-path assertion found by
 the CLI suite.
 
+The first native macOS CI run correctly denied the separate test harness access
+to a CLI-created credential. The end-to-end test was corrected to retrieve and
+clean up through the same CLI executable identity, without relaxing Keychain
+permissions. Independent review approved this correction; the Linux regression
+run passed before pushing it for native macOS validation.
+
 ## Remaining release evidence
 
 Native GitHub CI results are authoritative for Windows MSVC, Linux ARM64, and
