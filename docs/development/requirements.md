@@ -1,3 +1,5 @@
+> Design specification: “version 1.0” below describes the intended product scope, not the current package version. See [releases](https://github.com/diegmonti/totp/releases) for published versions and [traceability](traceability.md) for implementation coverage. Proposed architecture and future enhancements are design intent, not a promise of available features.
+
 # Software Requirements Specification
 ## Cross-Platform Secure TOTP CLI
 
@@ -96,6 +98,8 @@ Rust is selected for:
 - Standalone executable distribution.
 
 ## 2.2 Recommended Dependencies
+
+These are original design recommendations, not the installed dependency inventory. The implementation uses native platform bindings and RustCrypto HMAC/SHA crates instead of `keyring` and `totp-rs`; see [Cargo.toml](../../Cargo.toml) for current dependencies.
 
 | Component | Recommended Library | Purpose |
 |---|---|---|

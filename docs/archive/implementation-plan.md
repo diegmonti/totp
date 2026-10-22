@@ -1,6 +1,8 @@
+> Historical record of the initial implementation task. Its delivery instructions applied to that task only. Current contributor guidance is in [CONTRIBUTING.md](../../CONTRIBUTING.md); current publication procedures are in [releasing.md](../releasing.md).
+
 # Implementation plan
 
-This plan implements `REQUIREMENTS.md` version 1.0. The repository began with only
+This plan implements [requirements](../development/requirements.md) version 1.0. The repository began with only
 the requirements and MIT license. Work is divided among Sol 6.1 implementation
 agents, followed by a separate Sol 6.1 review and corrective validation.
 

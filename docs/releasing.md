@@ -2,7 +2,7 @@
 
 CI executes formatting, locked dependency compilation, Clippy with warnings denied, unit/CLI tests, and the ignored native integration test on Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Native integration requires `TOTP_NATIVE_TESTS=1` and `cargo test --locked --test native_storage -- --ignored --test-threads=1`. CI supplies an isolated Linux D-Bus session and unlocked GNOME Keyring, a temporary unlocked macOS keychain, or the Windows runner's native user store. Test-only disposable keyring passwords in the workflow are not production secrets. Native tests register three entries, check deterministic enumeration, replace and delete them. An additional Linux test checks exclusion of an unrelated native item; equivalent unrelated-item fixture evidence on macOS and Windows remains a platform acceptance task. Linux also runs an opt-in locked-collection failure test in an isolated temporary XDG data/config directory. Scheduled CI checks RustSec advisories, licenses and dependency sources with cargo-deny; Dependabot proposes weekly updates.
 
-The five-platform workflow has been configured, but this source delivery does not establish that GitHub-hosted runs or production signed upgrade acceptance have passed. Review actual workflow results and retain external acceptance evidence before calling v1 release-ready. CI's temporary stores do not reproduce every production session or locked state.
+The [v0.1.0 validation record](validation.md) links the successful release workflow and records artifact checks. Review the actual results for each candidate release; an earlier success does not validate a later commit. CI's temporary stores do not reproduce every production session or locked state, and do not establish production signed upgrade acceptance.
 
 ## Dependency maintenance exceptions
 
@@ -11,6 +11,13 @@ Reviewed 2026-10-21: `deny.toml` narrowly exempts maintenance-only notices RUSTS
 Maintainers must track upstream Secret Service support for zbus 6, review migrating the adapter, and remove these exceptions when its dependency graph is migrated. Reassess no later than 2027-01-21 and at every release; that date is a review obligation, not an automatically enforced expiration. Do not broaden the exception list to make checks pass.
 
 ## Automatic publication
+
+1. Review the candidate commit and its CI results, update `Cargo.toml` and `Cargo.lock` if the version changes, and merge the release changes.
+2. Fetch `main`, confirm its commit and package version, and create an annotated `v<package-version>` tag at that exact commit. Push that tag to `origin`.
+3. Monitor the [Release workflow](https://github.com/diegmonti/totp/actions/workflows/release.yml). Resolve failed checks before publication; do not bypass the dependency audit.
+4. Check the published release notes and expected assets, download the archives, verify `SHA256SUMS`, and smoke-test the downloaded executable with disposable credentials.
+
+Published tags and assets must remain immutable. Ship corrections under a new version.
 
 Push a `v<package-version>` tag to trigger release. The workflow reruns all five-platform CI gates, verifies the tag against Cargo metadata, builds Windows x64 and Linux x64/ARM64 executables, archives binaries with README and license, generates SHA-256 checksums, and publishes a GitHub release automatically after the selected builds succeed. Both macOS targets are added only when all six signing/notarization credentials below are present and nonblank. Missing or partial credentials omit macOS archives and add source-build guidance to the release notes; they do not block Windows or Linux publication. CI still tests macOS on every release. Configure GitHub tag protection/rulesets so only release maintainers can create version tags. Use a `release` environment with the repository's appropriate deployment restrictions; adding required reviewers intentionally makes publication wait for those reviewers.
 
@@ -29,7 +36,7 @@ Keep the same signing team and designated requirement across releases. Protect a
 
 Before publishing, review dependency changes and advisories, package licenses, native integration logs, tag/package version, and the manual acceptance evidence below. Releases use glibc from Ubuntu 24.04 on Linux; older distributions may require building from source. A standalone executable still requires native OS credential services. Windows signing is not configured.
 
-Action commits are pinned and were verified against upstream tags: checkout v4.2.2, upload-artifact v4.6.2, download-artifact v4.3.0. Review Dependabot updates before changing pins. Rust uses the stable channel; builds are locked to Cargo.lock but are not claimed bit-for-bit reproducible.
+Action commits are pinned in the [CI](../.github/workflows/ci.yml) and [release](../.github/workflows/release.yml) workflows. These files are the source of truth for action versions. Review Dependabot updates before changing pins. Rust uses the stable channel; builds are locked to Cargo.lock but are not claimed bit-for-bit reproducible.
 
 ## macOS upgrade acceptance
 

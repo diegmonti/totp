@@ -1,4 +1,10 @@
-# Security model
+# Security
+
+## Reporting a vulnerability
+
+Use [GitHub private vulnerability reporting](https://github.com/diegmonti/totp/security/advisories/new) if it is enabled for this repository. If that page is unavailable, ask the maintainer to provide a private reporting channel without posting vulnerability details. No separate private reporting address is currently documented. Do not put real seeds, credential payloads, or secret-bearing OTPAuth URIs in issues or reports; use disposable reproductions.
+
+## Security model
 
 Seeds and TOTP parameters are serialized as a versioned record inside the current user's native credential store. No application-managed plaintext credential database or inventory exists. Enumeration uses native APIs and filters the application namespace. Credential identifiers are not confidential; protected payloads contain seeds, algorithm, digits, period, epoch, issuer and account.
 
@@ -7,7 +13,5 @@ The tool protects credentials at rest using operating system controls. It cannot
 Never pass seeds or OTPAuth URIs in arguments. Interactive input is concealed; explicit stdin is useful for automation but the producer may leak its input. Do not enable shell tracing around secret-producing commands. Protect generated codes from CI logs and terminal recording. Diagnostics and errors must not include seeds, complete secret-bearing URIs, protected records, or generated codes.
 
 Unavailable, locked, unauthorized, or unsupported native storage fails explicitly. Access controls are not relaxed automatically. Non-interactive retrieval depends on previously authorized native access. Backend calls use available native bounds; synchronous native APIs may remain blocked by an unresponsive OS service and cannot always be reliably interrupted. Use an external process supervisor timeout where required, and do not interpret a timeout as proof that a write did not occur.
-
-Report suspected vulnerabilities privately through the repository's GitHub security advisory reporting feature if enabled. Otherwise contact the maintainers through a private channel listed in their GitHub profile; do not post real seeds, credential payloads, or OTPAuth URIs in public issues. No private reporting address is provisioned by this source tree.
 
 Dependencies are locked, checked by `cargo deny`, and monitored weekly in CI and Dependabot. These checks aid review and do not prove that dependencies or binaries are vulnerability-free. Official macOS releases require a stable Developer ID identity and notarization; source and ad-hoc builds have different authorization behavior. See [release setup](docs/releasing.md).

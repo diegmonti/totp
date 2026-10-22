@@ -1,6 +1,8 @@
+> Historical validation notes from the initial implementation, before publication. See the [v0.1.0 validation record](../validation.md) for subsequent CI and release results.
+
 # Implementation validation
 
-The implementation followed [the plan](../IMPLEMENTATION_PLAN.md) using five
+The implementation followed [the plan](implementation-plan.md) using five
 Sol 6.1 implementation subagents and a separate Sol 6.1 reviewer.
 
 ## Local evidence
@@ -22,7 +24,7 @@ Validated on Linux x86-64 with stable Rust 1.99.1:
 - `cargo deny --locked check advisories bans licenses sources` passes with three
   reviewed maintenance-only exceptions for the zbus 5 dependency family. The
   identifiers, rationale and migration review date are recorded in `deny.toml`
-  and [releasing.md](releasing.md); security vulnerability checks remain enabled.
+  and [releasing.md](../releasing.md); security vulnerability checks remain enabled.
 
 ## Review and corrections
 
@@ -53,5 +55,5 @@ Native GitHub CI results are authoritative for Windows MSVC, Linux ARM64, and
 both macOS runtime environments. Cross-compilation alone does not establish
 native integration success. Production macOS signing, upgrade continuity,
 locked-state behavior, and access isolation require the acceptance procedure in
-[releasing.md](releasing.md). No release was published by the implementation
+[releasing.md](../releasing.md). No release was published by the implementation
 task, and these local results are not a claim of complete v1 release acceptance.
