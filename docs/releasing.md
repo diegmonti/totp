@@ -2,7 +2,7 @@
 
 CI executes formatting, locked dependency compilation, Clippy with warnings denied, unit/CLI tests, and the ignored native integration test on Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Native integration requires `TOTP_NATIVE_TESTS=1` and `cargo test --locked --test native_storage -- --ignored --test-threads=1`. CI supplies an isolated Linux D-Bus session and unlocked GNOME Keyring, a temporary unlocked macOS keychain, or the Windows runner's native user store. Test-only disposable keyring passwords in the workflow are not production secrets. Native tests register three entries, check deterministic enumeration, replace and delete them. An additional Linux test checks exclusion of an unrelated native item; equivalent unrelated-item fixture evidence on macOS and Windows remains a platform acceptance task. Linux also runs an opt-in locked-collection failure test in an isolated temporary XDG data/config directory. Scheduled CI checks RustSec advisories, licenses and dependency sources with cargo-deny; Dependabot proposes weekly updates.
 
-The [v0.1.0 validation record](validation.md) links the successful release workflow and records artifact checks. Review the actual results for each candidate release; an earlier success does not validate a later commit. CI's temporary stores do not reproduce every production session or locked state, and do not establish production signed upgrade acceptance.
+Review the actual results for each candidate release; an earlier success does not validate a later commit. CI's temporary stores do not reproduce every production session or locked state, and do not establish production signed upgrade acceptance.
 
 ## Dependency maintenance exceptions
 

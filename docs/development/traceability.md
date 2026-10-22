@@ -18,5 +18,3 @@ The source specification is [requirements](requirements.md). This map describes 
 | AC-013; Definition of Done | Passing automated matrix, Windows/Linux archives and macOS source installation; signed macOS archives require additional signing/upgrade acceptance |
 
 No backup, export, cross-platform migration, cloud synchronization, GUI, HOTP, or dedicated headless store is implemented by the v1 scope. Actual Windows/macOS behavior and signed upgrade continuity require those platforms; Linux-only local success cannot substitute for them.
-
-See the [v0.1.0 validation record](../validation.md) for published release evidence and its limits.

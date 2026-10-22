@@ -21,7 +21,7 @@ cargo test --locked --test native_storage -- --ignored --test-threads=1
 
 Use disposable credentials and an isolated test store. Follow the [CI workflow](.github/workflows/ci.yml) for an isolated Linux session or temporary macOS keychain; Windows CI uses the runner's user store. Do not run the locked-store test against your normal keyring: `TOTP_LOCKED_TESTS=1` explicitly enables a test that locks the collection. Platform setup and limits are described in [platforms.md](docs/platforms.md).
 
-CI runs tests and native integration on Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Cross-compiling is useful but does not replace execution on those platforms. See [validation](docs/validation.md) for release evidence and remaining manual acceptance checks.
+CI runs tests and native integration on Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Cross-compiling is useful but does not replace execution on those platforms. See [release maintenance](docs/releasing.md) for release checks and manual platform acceptance procedures.
 
 ## Changes and review
 

@@ -42,7 +42,7 @@ Reading this README from a release archive? Open the [online documentation](http
 - [Security and vulnerability reporting](SECURITY.md)
 - [Contributing and testing](CONTRIBUTING.md)
 - [Release maintenance](docs/releasing.md)
-- [Documentation index](docs/README.md), including design and validation records
+- [Documentation index](docs/README.md), including design references
 
 ## License
 
