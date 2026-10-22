@@ -108,7 +108,7 @@ impl MacosStore {
         Ok(Self)
     }
     fn query(&self, name: Option<&str>, extra: &[(CF, CF)]) -> Owned {
-        let service = string("com.diegmonti.totp");
+        let service = string("org.frugo.totp");
         let account = name.map(string);
         let mut pairs = unsafe {
             vec![

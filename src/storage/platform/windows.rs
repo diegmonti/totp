@@ -4,7 +4,7 @@ use crate::error::{Error, Result};
 use crate::storage::SecretStore;
 use std::{ffi::c_void, ptr};
 use zeroize::Zeroizing;
-const PREFIX: &str = "com.diegmonti.totp/";
+const PREFIX: &str = "org.frugo.totp/";
 #[repr(C)]
 struct Credential {
     flags: u32,
@@ -131,7 +131,7 @@ fn mutation_lock_name() -> Result<Vec<u16>> {
     unsafe {
         LocalFree(text.cast());
     }
-    Ok(wide(&format!("Global\\com.diegmonti.totp.write.{sid}")))
+    Ok(wide(&format!("Global\\org.frugo.totp.write.{sid}")))
 }
 // Serialize check/write between application processes. Credential Manager itself
 // offers no create-if-absent primitive. The mutex has the user's default ACL.
@@ -283,7 +283,7 @@ mod tests {
     }
     #[test]
     fn mapping_is_exact_and_nul_is_rejected() {
-        assert_eq!(target("github").unwrap(), wide("com.diegmonti.totp/github"));
+        assert_eq!(target("github").unwrap(), wide("org.frugo.totp/github"));
         assert!(target("a\0b").is_err());
     }
 }

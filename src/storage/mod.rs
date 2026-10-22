@@ -2,7 +2,7 @@
 use crate::error::{Error, Result};
 use zeroize::Zeroizing;
 pub mod platform;
-pub const NAMESPACE: &str = "com.diegmonti.totp";
+pub const NAMESPACE: &str = "org.frugo.totp";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Capability {
