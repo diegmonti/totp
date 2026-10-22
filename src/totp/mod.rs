@@ -2,7 +2,7 @@ use crate::{
     credentials::{Algorithm, CredentialRecord},
     Error, Result,
 };
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, KeyInit, Mac};
 use zeroize::Zeroizing;
 
 pub fn generate_current(record: &CredentialRecord) -> Result<Zeroizing<String>> {

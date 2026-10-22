@@ -12,9 +12,9 @@ serde_json = { version = "1", features = ["raw_value"] }
 zeroize = { version = "1.8", features = ["derive", "serde"] }
 thiserror = "2"
 data-encoding = "2.9"
-hmac = "0.12"
-sha1 = "0.10"
-sha2 = "0.10"
+hmac = "0.13"
+sha1 = "0.11"
+sha2 = "0.11"
 crossterm = "0.29"
 
 [target.'cfg(target_os = "linux")'.dependencies]
