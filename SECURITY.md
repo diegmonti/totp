@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Use [GitHub private vulnerability reporting](https://github.com/diegmonti/totp/security/advisories/new) if it is enabled for this repository. If that page is unavailable, ask the maintainer to provide a private reporting channel without posting vulnerability details. No separate private reporting address is currently documented. Do not put real seeds, credential payloads, or secret-bearing OTPAuth URIs in issues or reports; use disposable reproductions.
+Report suspected vulnerabilities through [GitHub private vulnerability reporting](https://github.com/diegmonti/totp/security/advisories/new). Include the affected version, platform, impact, and steps to reproduce. Keep vulnerability details out of public issues. Do not put real seeds, credential payloads, or secret-bearing OTPAuth URIs in issues or reports; use disposable reproductions.
 
 ## Security model
 
