@@ -31,4 +31,4 @@ Dependency changes must include `Cargo.lock`. Run `cargo deny --locked check adv
 
 Linux uses a vendored Secret Service adapter with a small [no-prompt patch](vendor/secret-service/TOTP-PATCH.md). Adapter upgrades must preserve that behavior. See [release maintenance](docs/releasing.md) for dependency exceptions, signing, and publication.
 
-The [requirements](docs/development/requirements.md) and [traceability map](docs/development/traceability.md) describe intended scope and implementation coverage. Historical implementation records are archived separately from current contributor instructions.
+The [requirements](docs/development/requirements.md) and [traceability map](docs/development/traceability.md) describe intended scope and implementation coverage.
