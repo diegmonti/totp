@@ -212,7 +212,7 @@ fn native_enumeration_excludes_other_namespaces() {
         runtime.block_on(async {
             let service = SecretService::connect(EncryptionType::Dh).await.unwrap();
             let attributes = HashMap::from([
-                ("application", "com.diegmonti.totp.integration-unrelated"),
+                ("application", "org.frugo.totp.integration-unrelated"),
                 ("credential", name.as_str()),
             ]);
             if create {
