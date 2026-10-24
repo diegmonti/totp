@@ -21,6 +21,8 @@ Both commands reject duplicates unless `--replace` is explicit, and validate inp
 
 `get` prints only the configured decimal digits and one newline. It preserves leading zeros and never reads stdin. `list` prints sorted identifiers, one per line, or nothing when empty. Identifiers must match `[a-z0-9][a-z0-9._-]{0,63}` (1–64 ASCII bytes); uppercase is rejected to avoid Windows aliases. The stable namespace is `org.frugo.totp`. Names are visible to authorized native system tools and are not confidential. `remove` requires the exact interactive confirmation `yes`, or `--force`; missing input fails. `doctor` reports backend availability and capabilities without seeds or codes. Unknown authorization capability is not a guarantee of unattended access.
 
+On Linux, `add`, `import`, replacement, and `remove` may display the native keyring's unlock or authorization dialog. Cancelling the dialog fails the operation. Stdin input flags do not suppress that dialog, and `remove --force` only skips the CLI confirmation. `get` never opens a dialog and requires an already accessible store.
+
 ## Shell examples
 
 Bash and Zsh:

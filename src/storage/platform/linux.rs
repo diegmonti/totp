@@ -1,5 +1,4 @@
-//! Secret Service with DH encrypted transport and an overall operation deadline.
-//! No unlock, collection creation, or Prompt request is ever made.
+//! DH-encrypted Secret Service: reads never prompt; mutations may authorize via UI.
 use crate::{
     error::{Error, Result},
     storage::{SecretStore, NAMESPACE},
@@ -24,7 +23,7 @@ impl LinuxStore {
     pub fn new() -> Result<Self> {
         Ok(Self)
     }
-    fn run<T>(&self, future: impl Future<Output = Result<T>>) -> Result<T> {
+    fn run<T>(&self, timeout: Duration, future: impl Future<Output = Result<T>>) -> Result<T> {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
@@ -32,13 +31,9 @@ impl LinuxStore {
                 Error::BackendUnavailable("cannot initialize Secret Service runtime".into())
             })?;
         runtime.block_on(async {
-            tokio::time::timeout(Duration::from_secs(10), future)
-                .await
-                .map_err(|_| {
-                    Error::BackendUnavailable(
-                        "Secret Service operation timed out after 10 seconds".into(),
-                    )
-                })?
+            tokio::time::timeout(timeout, future).await.map_err(|_| {
+                Error::BackendUnavailable("Secret Service operation timed out".into())
+            })?
         })
     }
 }
@@ -78,7 +73,7 @@ fn attrs(name: &str) -> HashMap<&str, &str> {
 }
 fn locked() -> Error {
     Error::InteractionRequired(
-        "credential store is locked or requires authorization; unlock it outside totp".into(),
+        "credential store is locked or authorization was not completed; unlock it before unattended retrieval".into(),
     )
 }
 fn map_error(error: secret_service::Error) -> Error {
@@ -86,9 +81,12 @@ fn map_error(error: secret_service::Error) -> Error {
     match error {
         S::Locked | S::Prompt => locked(),
         S::NoResult | S::Unavailable => Error::BackendUnavailable("no existing Secret Service default collection or session bus; configure an unlocked secure keyring".into()),
-        S::Zbus(ref e) if e.to_string().contains("org.freedesktop.Secret.Error.IsLocked") => locked(),
-        S::Zbus(ref e) if e.to_string().contains("AccessDenied") || e.to_string().contains("PermissionDenied") => Error::PermissionDenied("Secret Service denied access".into()),
-        S::ZbusFdo(ref e) if e.to_string().contains("AccessDenied") => Error::PermissionDenied("Secret Service denied access".into()),
+        S::Zbus(zbus::Error::MethodError(ref name, _, _))
+            if name.as_str() == "org.freedesktop.Secret.Error.IsLocked" => locked(),
+        S::Zbus(zbus::Error::MethodError(ref name, _, _))
+            if matches!(name.as_str(), "org.freedesktop.DBus.Error.AccessDenied" | "org.freedesktop.DBus.Error.PermissionDenied") => Error::PermissionDenied("Secret Service denied access".into()),
+        S::ZbusFdo(zbus::fdo::Error::AccessDenied(_)) => Error::PermissionDenied("Secret Service denied access".into()),
+        S::Zbus(zbus::Error::FDO(ref e)) if matches!(e.as_ref(), zbus::fdo::Error::AccessDenied(_)) => Error::PermissionDenied("Secret Service denied access".into()),
         // Never propagate server-controlled error text: it could contain payloads.
         _ => Error::BackendUnavailable("Secret Service request failed; check the session bus, keyring service and permissions".into()),
     }
@@ -96,7 +94,7 @@ fn map_error(error: secret_service::Error) -> Error {
 impl SecretStore for LinuxStore {
     fn store(&self, name: &str, record: &[u8], replace: bool) -> Result<()> {
         let _lock = mutation_lock()?;
-        self.run(async {
+        self.run(Duration::from_secs(120), async {
             let service = SecretService::connect(EncryptionType::Dh)
                 .await
                 .map_err(map_error)?;
@@ -105,16 +103,16 @@ impl SecretStore for LinuxStore {
             if count > 0 && !replace {
                 return Err(Error::AlreadyExists(name.into()));
             }
-            if !found.locked.is_empty() {
-                return Err(locked());
-            }
             if count > 1 {
                 return Err(Error::General(
                     "ambiguous duplicate native credentials; repair keyring entries outside totp"
                         .into(),
                 ));
             }
-            if let Some(item) = found.unlocked.first() {
+            if let Some(item) = found.unlocked.first().or_else(|| found.locked.first()) {
+                if !found.locked.is_empty() {
+                    item.unlock().await.map_err(map_error)?;
+                }
                 // SetSecret updates the payload in place, preserving the existing item.
                 return item
                     .set_secret(record, "application/json")
@@ -123,7 +121,7 @@ impl SecretStore for LinuxStore {
             }
             let collection = service.get_default_collection().await.map_err(map_error)?;
             if collection.is_locked().await.map_err(map_error)? {
-                return Err(locked());
+                collection.unlock().await.map_err(map_error)?;
             }
             collection
                 .create_item(
@@ -139,7 +137,7 @@ impl SecretStore for LinuxStore {
         })
     }
     fn retrieve(&self, name: &str) -> Result<Zeroizing<Vec<u8>>> {
-        self.run(async {
+        self.run(Duration::from_secs(10), async {
             let service = SecretService::connect(EncryptionType::Dh)
                 .await
                 .map_err(map_error)?;
@@ -161,30 +159,29 @@ impl SecretStore for LinuxStore {
     }
     fn delete(&self, name: &str) -> Result<()> {
         let _lock = mutation_lock()?;
-        self.run(async {
+        self.run(Duration::from_secs(120), async {
             let service = SecretService::connect(EncryptionType::Dh)
                 .await
                 .map_err(map_error)?;
             let found = service.search_items(attrs(name)).await.map_err(map_error)?;
-            if !found.locked.is_empty() {
-                return Err(locked());
-            }
-            if found.unlocked.len() > 1 {
+            if found.unlocked.len() + found.locked.len() > 1 {
                 return Err(Error::General(
                     "ambiguous duplicate native credentials".into(),
                 ));
             }
-            found
+            let item = found
                 .unlocked
                 .first()
-                .ok_or_else(|| Error::NotFound(name.into()))?
-                .delete()
-                .await
-                .map_err(map_error)
+                .or_else(|| found.locked.first())
+                .ok_or_else(|| Error::NotFound(name.into()))?;
+            if !found.locked.is_empty() {
+                item.unlock().await.map_err(map_error)?;
+            }
+            item.delete().await.map_err(map_error)
         })
     }
     fn list(&self) -> Result<Vec<String>> {
-        self.run(async {
+        self.run(Duration::from_secs(10), async {
             let service = SecretService::connect(EncryptionType::Dh)
                 .await
                 .map_err(map_error)?;

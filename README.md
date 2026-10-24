@@ -4,6 +4,8 @@ A command-line TOTP authenticator that stores credentials in Windows Credential 
 
 Credentials stay in your operating system's native store. There is no application credential file, separate inventory, or plaintext fallback. Unattended use requires an already accessible and authorized store.
 
+On Linux, adding, replacing, and removing credentials may open the native keyring's unlock or authorization dialog. Generating codes never opens an authorization dialog.
+
 ## Install
 
 Download binaries and `SHA256SUMS` from [GitHub Releases](https://github.com/diegmonti/totp/releases). See the [installation guide](docs/installation.md) for checksum verification and source builds.
@@ -46,4 +48,4 @@ Reading this README from a release archive? Open the [online documentation](http
 
 ## License
 
-[MIT](LICENSE). The vendored Secret Service adapter retains its upstream [MIT](vendor/secret-service/LICENSE-MIT) and [Apache 2.0](vendor/secret-service/LICENSE-APACHE) license files.
+[MIT](LICENSE). Dependencies retain their respective licenses.
