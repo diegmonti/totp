@@ -251,7 +251,6 @@ fn native_enumeration_excludes_other_namespaces() {
 fn locked_native_backend_fails_without_interaction() {
     use secret_service::{EncryptionType, SecretService};
     use std::{
-        io::Write,
         process::{Command, Stdio},
         time::{Duration, Instant},
     };
@@ -274,50 +273,36 @@ fn locked_native_backend_fails_without_interaction() {
         .build()
         .unwrap();
     runtime.block_on(async {
-        tokio::time::timeout(Duration::from_secs(10), async {
-            let service = SecretService::connect(EncryptionType::Dh).await.unwrap();
-            let collection = service.get_default_collection().await.unwrap();
-            collection.lock().await.unwrap();
-            assert!(collection.is_locked().await.unwrap());
-        })
-        .await
-        .expect("locking the isolated collection timed out");
+        let service = SecretService::connect(EncryptionType::Dh).await.unwrap();
+        let collection = service.get_default_collection().await.unwrap();
+        collection.lock().await.unwrap();
+        assert!(collection.is_locked().await.unwrap());
     });
-    for args in [
-        vec!["get", name.as_str()],
-        vec!["add", "locked-new-fixture", "--secret-stdin"],
-    ] {
-        let needs_input = args[0] == "add";
-        let started = Instant::now();
-        let mut child = Command::new(env!("CARGO_BIN_EXE_totp"))
-            .args(args)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .unwrap();
-        let mut stdin = child.stdin.take().unwrap();
-        if needs_input {
-            stdin.write_all(b"JBSWY3DPEHPK3PXP\n").unwrap();
+    let started = Instant::now();
+    let mut child = Command::new(env!("CARGO_BIN_EXE_totp"))
+        .args(["get", name.as_str()])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    drop(child.stdin.take());
+    loop {
+        if child.try_wait().unwrap().is_some() {
+            break;
         }
-        drop(stdin);
-        loop {
-            if child.try_wait().unwrap().is_some() {
-                break;
-            }
-            if started.elapsed() > Duration::from_secs(12) {
-                let _ = child.kill();
-                let _ = child.wait();
-                panic!("locked-store command did not finish without interaction");
-            }
-            std::thread::sleep(Duration::from_millis(20));
+        if started.elapsed() > Duration::from_secs(12) {
+            let _ = child.kill();
+            let _ = child.wait();
+            panic!("locked-store command did not finish without interaction");
         }
-        let output = child.wait_with_output().unwrap();
-        assert_eq!(output.status.code(), Some(5));
-        assert!(output.stdout.is_empty());
-        assert!(!output
-            .stderr
-            .windows(16)
-            .any(|part| part == b"JBSWY3DPEHPK3PXP"));
+        std::thread::sleep(Duration::from_millis(20));
     }
+    let output = child.wait_with_output().unwrap();
+    assert_eq!(output.status.code(), Some(5));
+    assert!(output.stdout.is_empty());
+    assert!(!output
+        .stderr
+        .windows(16)
+        .any(|part| part == b"JBSWY3DPEHPK3PXP"));
 }

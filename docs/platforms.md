@@ -8,9 +8,15 @@ Install and configure a Secret Service-compatible provider such as GNOME Keyring
 
 Headless operation works only with an existing accessible, unlocked compatible backend. `dbus-run-session` creates a session bus, not a secure credential store. Starting a daemon without correctly unlocking an encrypted collection is insufficient. The application never creates an unprotected fallback. Do not put your keyring password in command arguments or shell history. A dedicated headless backend is outside scope.
 
+The Linux adapter uses `secret-service` with encrypted DH transport. `get`, `list`, and `doctor` never request unlocking or an authorization dialog. A locked credential makes `get` fail with exit code 5; unlock the keyring before unattended generation.
+
+`add`, `import`, replacement, and `remove` may ask the provider to unlock the existing collection/item and may display its authorization dialog. Approving the dialog allows the operation to continue; cancelling it fails with exit code 5. `--secret-stdin` and `--stdin` choose how the seed/URI is read, and `--force` skips the CLI removal confirmation; these options do not suppress native authorization dialogs. The application does not create a collection or relax the provider's access policy.
+
+Read/list operations have a ten-second deadline. Mutations have a two-minute deadline to allow time for authorization, plus up to ten seconds to acquire the mutation lock. A timeout does not prove that a write was rolled back; check the store before retrying.
+
 WSL uses Linux Secret Service. It cannot automatically use Windows Credential Manager. Configure a Linux provider or expect explicit unavailability. Do not copy Windows credentials into plaintext files as a workaround.
 
-If unavailable: verify the session bus and service ownership, provider installation, and collection state. If locked or interaction is required: unlock through the provider's authorized UI/session mechanism before automation. If access is denied: inspect the provider's policy as that user. Do not run the application as root to work around a user-session configuration failure.
+If unavailable: verify the session bus and service ownership, provider installation, and collection state. If locked or interaction is required: unlock through the provider's authorized UI/session mechanism before automation, or approve its dialog during registration/removal. If access is denied: inspect the provider's policy as that user. Do not run the application as root to work around a user-session configuration failure.
 
 ## macOS
 

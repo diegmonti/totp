@@ -4,7 +4,8 @@ Report reproducible bugs and propose changes through [GitHub issues](https://git
 
 ## Development
 
-Install stable Rust and the native build tools for your OS, then run:
+Install stable Rust and the native build tools for your OS. Linux tests also need
+`dbus-daemon`; native integration needs `dbus-x11` and `gnome-keyring`. Then run:
 
 ```sh
 cargo build --locked
@@ -13,7 +14,7 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-The normal test suite covers TOTP vectors, input validation, and CLI behavior without requiring native credentials. Native integration tests are ignored by default. To opt in, set `TOTP_NATIVE_TESTS=1` and run:
+The normal test suite covers TOTP vectors, input validation, and CLI behavior without requiring native credentials. Linux tests need `dbus-daemon` to simulate authorization requests on an isolated session bus. Native integration tests are ignored by default. To opt in, set `TOTP_NATIVE_TESTS=1` and run:
 
 ```sh
 cargo test --locked --test native_storage -- --ignored --test-threads=1
@@ -29,6 +30,6 @@ Keep pull requests focused. Explain the behavior changed and how you verified it
 
 Dependency changes must include `Cargo.lock`. Run `cargo deny --locked check advisories bans licenses sources` with the cargo-deny version used in CI. Review new advisories and licenses rather than adding blanket exceptions.
 
-Linux uses a vendored Secret Service adapter with a small [no-prompt patch](vendor/secret-service/TOTP-PATCH.md). Adapter upgrades must preserve that behavior. See [release maintenance](docs/releasing.md) for dependency exceptions, signing, and publication.
+Linux uses the published `secret-service` crate with DH-encrypted transport. Retrieval, listing, and diagnostics must never unlock the store or request a dialog. Registration, replacement, and deletion may unlock through the provider and display authorization dialogs. Adapter upgrades must pass the native and prompt regression tests, including dialog completion/cancellation and locked retrieval. See [release maintenance](docs/releasing.md) for dependency review, signing, and publication.
 
 The [requirements](docs/development/requirements.md) and [traceability map](docs/development/traceability.md) describe intended scope and implementation coverage.

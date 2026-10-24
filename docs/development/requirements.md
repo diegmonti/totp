@@ -348,7 +348,7 @@ Diagnostics shall never disclose secrets or generated TOTP codes.
 
 **Priority:** Must Have
 
-## FR-009 — Non-Interactive Credential Registration
+## FR-009 — Credential Registration Through Standard Input
 
 The application shall support credential registration through explicitly selected standard input.
 
@@ -377,6 +377,8 @@ totp import --stdin
 The documentation shall explain that passing a seed through stdin does not guarantee its confidentiality if the upstream process exposes or logs the value.
 
 Interactive registration shall remain the default behavior.
+
+On Linux, credential registration, replacement, and deletion may display native unlock or authorization dialogs, including when the seed/URI is supplied through stdin or removal uses `--force`. These options control CLI input and confirmation only. Retrieval and TOTP generation shall remain non-interactive and fail explicitly if the store is locked.
 
 **Priority:** Must Have
 
@@ -909,7 +911,7 @@ If no compatible backend is available:
 - No insecure fallback shall occur.
 - The application shall report the relevant backend limitation.
 
-## AC-005 — Non-Interactive Registration
+## AC-005 — Registration Through Standard Input
 
 The application shall successfully register a valid TOTP credential using:
 

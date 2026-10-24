@@ -1,13 +1,13 @@
 [advisories]
 version = 2
-# Reviewed 2026-10-21: these are maintenance notices, not known vulnerabilities.
-# secret-service 5 still uses zbus 5; migrate the vendored adapter to zbus 6
-# when its API integration is reviewed. Revisit by 2027-01-21; see docs/releasing.md.
+# secret-service 5.2 requires zbus 5; these standalone crates merged into zbus 6.
+# Maintenance notices only, reviewed 2026-10-24; reassess by 2027-01-21.
 ignore = [
-  { id = "RUSTSEC-2026-0370", reason = "zvariant merged into zbus 6; secret-service 5 requires zbus 5; review migration by 2027-01-21" },
-  { id = "RUSTSEC-2026-0371", reason = "zbus_names merged into zbus 6; secret-service 5 requires zbus 5; review migration by 2027-01-21" },
-  { id = "RUSTSEC-2026-0372", reason = "zvariant_derive merged into zbus 6; secret-service 5 requires zbus 5; review migration by 2027-01-21" },
+  { id = "RUSTSEC-2026-0370", reason = "zvariant merged into zbus 6; secret-service 5.2 requires zbus 5; review migration by 2027-01-21" },
+  { id = "RUSTSEC-2026-0371", reason = "zbus_names merged into zbus 6; secret-service 5.2 requires zbus 5; review migration by 2027-01-21" },
+  { id = "RUSTSEC-2026-0372", reason = "zvariant_derive merged into zbus 6; secret-service 5.2 requires zbus 5; review migration by 2027-01-21" },
 ]
+
 [licenses]
 version = 2
 confidence-threshold = 0.8

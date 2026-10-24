@@ -8,7 +8,7 @@ The source specification is [requirements](requirements.md). This map describes 
 | FR-002; SEC-003/004; AC-001 | Core RFC 6238 vectors for SHA1/256/512, digit widths, periods, epochs and time boundaries |
 | FR-003/004; SR-001/003; AC-002/003 | Native storage modules and `tests/native_storage.rs`: three-entry sorted namespace enumeration, replacement and deletion |
 | FR-005; DM-001–005; AC-007 | OTPAuth parser and strict versioned protected record validation, identifier mapping |
-| FR-006/008; SR-007/008; AC-008/010/011 | CLI output/exit tests, no-prompt native calls, doctor and explicit capability errors |
+| FR-006/008; SR-007/008; AC-008/010/011 | CLI output/exit tests, retrieval without prompts, Linux mutation dialog completion/cancellation and D-Bus error regression tests in `tests/linux_prompt.rs`, doctor and explicit capability errors |
 | SR-004/005; AC-004 | Linux Secret Service session CI; documented headless/WSL conditions; absent/locked provider failure |
 | SR-006; AC-006 | macOS no-UI native API, optional Developer ID/notarization workflow; real signed upgrade and access-policy checks remain manual release evidence |
 | SEC-001/002/005–009 | Redacted errors, no secret-bearing arguments/files, bounded input, zeroizing sensitive buffers; security model in [SECURITY.md](../../SECURITY.md) |
