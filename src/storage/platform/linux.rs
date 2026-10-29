@@ -81,12 +81,12 @@ fn map_error(error: secret_service::Error) -> Error {
     match error {
         S::Locked | S::Prompt => locked(),
         S::NoResult | S::Unavailable => Error::BackendUnavailable("no existing Secret Service default collection or session bus; configure an unlocked secure keyring".into()),
-        S::Zbus(zbus::Error::MethodError(ref name, _, _))
+        S::Zbus(zbus5::Error::MethodError(ref name, _, _))
             if name.as_str() == "org.freedesktop.Secret.Error.IsLocked" => locked(),
-        S::Zbus(zbus::Error::MethodError(ref name, _, _))
+        S::Zbus(zbus5::Error::MethodError(ref name, _, _))
             if matches!(name.as_str(), "org.freedesktop.DBus.Error.AccessDenied" | "org.freedesktop.DBus.Error.PermissionDenied") => Error::PermissionDenied("Secret Service denied access".into()),
-        S::ZbusFdo(zbus::fdo::Error::AccessDenied(_)) => Error::PermissionDenied("Secret Service denied access".into()),
-        S::Zbus(zbus::Error::FDO(ref e)) if matches!(e.as_ref(), zbus::fdo::Error::AccessDenied(_)) => Error::PermissionDenied("Secret Service denied access".into()),
+        S::ZbusFdo(zbus5::fdo::Error::AccessDenied(_)) => Error::PermissionDenied("Secret Service denied access".into()),
+        S::Zbus(zbus5::Error::FDO(ref e)) if matches!(e.as_ref(), zbus5::fdo::Error::AccessDenied(_)) => Error::PermissionDenied("Secret Service denied access".into()),
         // Never propagate server-controlled error text: it could contain payloads.
         _ => Error::BackendUnavailable("Secret Service request failed; check the session bus, keyring service and permissions".into()),
     }
