@@ -21,5 +21,8 @@ crossterm = "0.29"
 secret-service = { version = "5.2", default-features = false, features = ["rt-tokio-crypto-rust"] }
 tokio = { version = "1.54.1", features = ["rt", "time"] }
 
-# Typed D-Bus error classification; also used by the isolated service tests.
+# Match the zbus version used by secret-service for typed error classification.
+zbus5 = { package = "zbus", version = "5", default-features = false, features = ["tokio"] }
+
+# Used by the isolated D-Bus service tests.
 zbus = { version = "6", default-features = false, features = ["tokio"] }
