@@ -12,11 +12,7 @@ use std::{
     thread::{self, JoinHandle},
     time::{Duration, Instant},
 };
-use zbus::{
-    interface,
-    object_server::SignalEmitter,
-    zvariant::{OwnedObjectPath, OwnedValue, Value},
-};
+use zbus::{interface, object_server::SignalEmitter, OwnedObjectPath, OwnedVariant, Variant};
 
 const COLLECTION: &str = "/org/freedesktop/secrets/collection/test";
 const ITEM: &str = "/org/freedesktop/secrets/collection/test/item";
@@ -39,10 +35,14 @@ fn path(value: &str) -> OwnedObjectPath {
 struct Service(Shared);
 #[interface(name = "org.freedesktop.Secret.Service")]
 impl Service {
-    fn open_session(&self, algorithm: &str, _input: Value<'_>) -> (OwnedValue, OwnedObjectPath) {
+    fn open_session(
+        &self,
+        algorithm: &str,
+        _input: Variant<'_>,
+    ) -> (OwnedVariant, OwnedObjectPath) {
         assert_eq!(algorithm, "dh-ietf1024-sha256-aes128-cbc-pkcs7");
         (
-            Value::from(vec![2u8]).try_into().unwrap(),
+            Variant::from(vec![2u8]).try_into().unwrap(),
             path("/org/freedesktop/secrets/session/test"),
         )
     }
@@ -86,7 +86,7 @@ impl Collection {
     }
     fn create_item(
         &self,
-        _properties: HashMap<String, OwnedValue>,
+        _properties: HashMap<String, OwnedVariant>,
         _secret: Secret,
         _replace: bool,
     ) -> zbus::fdo::Result<(OwnedObjectPath, OwnedObjectPath)> {
@@ -145,9 +145,9 @@ impl Prompt {
             (dismissed, state.pending.clone())
         };
         let result = match pending.as_str() {
-            "create" => Value::from(path(ITEM)),
-            "unlock" => Value::from(vec![path(ITEM)]),
-            _ => Value::from(String::new()),
+            "create" => Variant::from(path(ITEM)),
+            "unlock" => Variant::from(vec![path(ITEM)]),
+            _ => Variant::from(String::new()),
         };
         Self::completed(&emitter, dismissed, result)
             .await
@@ -157,7 +157,7 @@ impl Prompt {
     async fn completed(
         emitter: &SignalEmitter<'_>,
         dismissed: bool,
-        result: Value<'_>,
+        result: Variant<'_>,
     ) -> zbus::Result<()>;
 }
 
@@ -197,17 +197,11 @@ impl TestService {
                 .unwrap()
                 .block_on(async {
                     let _connection = zbus::connection::Builder::address(address.as_str())
-                        .unwrap()
                         .name("org.freedesktop.secrets")
-                        .unwrap()
                         .serve_at("/org/freedesktop/secrets", Service(state.clone()))
-                        .unwrap()
                         .serve_at(COLLECTION, Collection(state.clone()))
-                        .unwrap()
                         .serve_at(ITEM, Item(state.clone()))
-                        .unwrap()
                         .serve_at(PROMPT, Prompt(state))
-                        .unwrap()
                         .build()
                         .await
                         .unwrap();

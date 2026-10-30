@@ -1104,6 +1104,7 @@ dependencies = [
  "sha2",
  "thiserror",
  "tokio",
+ "zbus 5.19.0",
  "zbus 6.1.0",
  "zeroize",
 ]
